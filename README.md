@@ -71,7 +71,7 @@
 
 ## Download
 
-1. Download `FaceUnlock-1.0.zip` from the [latest release](https://github.com/Bargi20/FaceUnlock/releases/latest). It runs on both Apple silicon and Intel Macs.
+1. Download the `FaceUnlock-x.y.zip` file from the [latest release](https://github.com/Bargi20/FaceUnlock/releases/latest). It runs on both Apple silicon and Intel Macs.
 2. Unzip it and drag **Face Unlock** into your **Applications** folder.
 3. Open it. The app is not notarized by Apple, so the first time macOS blocks it with a warning. Go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**, then confirm.
 

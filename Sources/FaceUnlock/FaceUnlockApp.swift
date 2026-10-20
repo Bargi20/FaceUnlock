@@ -95,7 +95,7 @@ final class NotchSquareWindow {
     private let panel: NSPanel
     private var cancellables: Set<AnyCancellable> = []
     private var skyLightEnabled = false
-    private static let size = NSSize(width: 300, height: 280)
+    private static let size = NSSize(width: 420, height: 240)
 
     init() {
         panel = NSPanel(

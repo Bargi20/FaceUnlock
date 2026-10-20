@@ -511,13 +511,19 @@ struct FaceIDSquare: View {
     @ObservedObject var manager = FaceUnlockManager.shared
     /// Height of the hardware notch, so the content sits below it.
     let notchHeight: CGFloat
-    var side: CGFloat = 200
+
+    /// Wide and short, like an expanded Dynamic Island.
+    static let width: CGFloat = 340
+    /// Height below the notch.
+    static let bodyHeight: CGFloat = 128
+    static let cornerRadius: CGFloat = 38
+    static let scannerSize: CGFloat = 84
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             Spacer(minLength: notchHeight)
             content
-                .frame(height: 104)
+                .frame(height: Self.scannerSize)
             Text(label)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(labelColor)
@@ -528,9 +534,9 @@ struct FaceIDSquare: View {
                 .animation(.smooth, value: label)
             Spacer(minLength: 12)
         }
-        .frame(width: side, height: side + notchHeight * 0.5)
+        .frame(width: Self.width, height: notchHeight + Self.bodyHeight)
         .background(
-            UnevenRoundedRectangle(bottomLeadingRadius: 46, bottomTrailingRadius: 46, style: .continuous)
+            UnevenRoundedRectangle(bottomLeadingRadius: Self.cornerRadius, bottomTrailingRadius: Self.cornerRadius, style: .continuous)
                 .fill(.black)
         )
         .contentShape(Rectangle())
@@ -541,10 +547,10 @@ struct FaceIDSquare: View {
     @ViewBuilder private var content: some View {
         switch manager.phase {
         case .prompted:
-            FaceIDGlyph(state: .idle, size: 70)
+            FaceIDGlyph(state: .idle, size: 60)
         case .scanning, .matched, .failed:
             // One view for all three, so the rings settle smoothly instead of restarting.
-            FaceIDScanner(state: scannerState)
+            FaceIDScanner(state: scannerState, size: Self.scannerSize)
         case .hidden:
             EmptyView()
         }

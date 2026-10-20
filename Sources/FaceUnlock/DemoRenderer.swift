@@ -64,7 +64,7 @@ private struct DemoScene: View {
                     .font(.system(size: 76, weight: .bold, design: .rounded))
             }
             .foregroundStyle(.white.opacity(0.92))
-            .padding(.top, 250)
+            .padding(.top, 215)
             .opacity(1 - unlockFade)
 
             // After unlocking: the desktop's menu bar.
@@ -117,12 +117,12 @@ private struct DemoScene: View {
             let state: FaceIDScanner.State = time < timeline.settle
                 ? .scanning : (timeline.scenario == .unlock ? .success : .failure)
 
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 Spacer(minLength: notch.height)
                 FaceIDScannerFrame(t: scannerTime, settleAt: time < timeline.settle ? nil : settleAt,
-                                   state: state)
+                                   state: state, size: FaceIDSquare.scannerSize)
                     .modifier(FaceIDShake(animatableData: shake))
-                    .frame(height: 104)
+                    .frame(height: FaceIDSquare.scannerSize)
                 Text(label(state))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(state == .failure ? Color(red: 1.0, green: 0.4, blue: 0.35) : .white.opacity(0.85))
@@ -131,9 +131,10 @@ private struct DemoScene: View {
                     .padding(.horizontal, 16)
                 Spacer(minLength: 12)
             }
-            .frame(width: 200, height: 200 + notch.height * 0.5)
+            .frame(width: FaceIDSquare.width, height: notch.height + FaceIDSquare.bodyHeight)
             .background(
-                UnevenRoundedRectangle(bottomLeadingRadius: 46, bottomTrailingRadius: 46, style: .continuous)
+                UnevenRoundedRectangle(bottomLeadingRadius: FaceIDSquare.cornerRadius,
+                                       bottomTrailingRadius: FaceIDSquare.cornerRadius, style: .continuous)
                     .fill(.black)
             )
             .scaleEffect(0.25 + 0.75 * progress, anchor: .top)
