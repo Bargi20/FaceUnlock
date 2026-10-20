@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct FaceUnlockSettings: View {
-    @ObservedObject var manager = FaceUnlockManager.shared
+struct NotchUnlockSettings: View {
+    @ObservedObject var manager = NotchUnlockManager.shared
     @State private var password = ""
     @State private var editingPassword = false
     @FocusState private var passwordFocused: Bool
@@ -21,7 +21,7 @@ struct FaceUnlockSettings: View {
                         .font(.callout)
                 }
             } header: {
-                Text("Face Unlock")
+                Text("NotchUnlock")
             } footer: {
                 Text("Convenience, not security: it uses the 2D camera and types the login password saved in your Keychain. It only works once you are logged in, not after a restart.")
             }
@@ -31,7 +31,7 @@ struct FaceUnlockSettings: View {
                     FaceIDGlyph(state: manager.hasEnrollment ? .success : .idle, size: 28, color: .primary)
                     Text(manager.hasEnrollment ? tr("Face enrolled") : tr("No face enrolled"))
                     Spacer()
-                    Button(manager.hasEnrollment ? tr("Enroll again") : tr("Set Up Face Unlock…")) {
+                    Button(manager.hasEnrollment ? tr("Enroll again") : tr("Set Up NotchUnlock…")) {
                         showingEnrollment = true
                     }
                     .disabled(!manager.modelAvailable)
@@ -83,7 +83,7 @@ struct FaceUnlockSettings: View {
             } header: {
                 Text("Login Password")
             } footer: {
-                Text("The same password you use to log in to this Mac. Face Unlock types it for you when it recognizes your face. It is stored only in your Keychain.")
+                Text("The same password you use to log in to this Mac. NotchUnlock types it for you when it recognizes your face. It is stored only in your Keychain.")
             }
 
             Section {

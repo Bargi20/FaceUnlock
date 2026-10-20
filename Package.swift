@@ -1,10 +1,10 @@
 // swift-tools-version: 5.10
-// Face Unlock: Face ID-style unlock for the Mac, from a square that drops out
+// NotchUnlock: Face ID-style unlock for the Mac, from a square that drops out
 // of the notch. Engine ported from FaceMac (GPL-3.0).
 import PackageDescription
 
 let package = Package(
-    name: "FaceUnlock",
+    name: "NotchUnlock",
     platforms: [.macOS(.v14)],
     dependencies: [
         // Shows the notch window above the lock screen.
@@ -12,9 +12,9 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "FaceUnlock",
+            name: "NotchUnlock",
             dependencies: [.product(name: "SkyLightWindow", package: "SkyLightWindow")],
-            path: "Sources/FaceUnlock"
+            path: "Sources/NotchUnlock"
         ),
     ]
 )

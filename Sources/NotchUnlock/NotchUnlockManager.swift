@@ -6,8 +6,8 @@ import Foundation
 
 /// Bridges the face-unlock engine (ported from FaceMac, GPL-3.0) to the notch UI.
 @MainActor
-final class FaceUnlockManager: ObservableObject {
-    static let shared = FaceUnlockManager()
+final class NotchUnlockManager: ObservableObject {
+    static let shared = NotchUnlockManager()
 
     enum Phase: Equatable {
         case hidden
@@ -66,7 +66,7 @@ final class FaceUnlockManager: ObservableObject {
         coordinator.start()
         // Permissions granted in System Settings show up when the app is back in front.
         NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { FaceUnlockManager.shared.refresh() }
+            MainActor.assumeIsolated { NotchUnlockManager.shared.refresh() }
         }
     }
 

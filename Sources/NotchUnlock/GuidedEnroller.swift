@@ -70,10 +70,10 @@ public final class GuidedEnroller: CameraCaptureDelegate {
     public var onHint: ((String) -> Void)?
     private var lastDiagnostic = Date.distantPast
 
-    /// Enrollment diagnostics: ~/Library/Application Support/FaceUnlock/faceunlock.log
+    /// Enrollment diagnostics: ~/Library/Application Support/NotchUnlock/faceunlock.log
     static func diagnostic(_ message: String) {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("FaceUnlock", isDirectory: true)
+            .appendingPathComponent("NotchUnlock", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let url = directory.appendingPathComponent("faceunlock.log")
         let line = "\(Date.now.formatted(date: .omitted, time: .standard)) \(message)\n"

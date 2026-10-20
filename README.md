@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="Icon/icon-1024.png" width="128" alt="Face Unlock">
+  <img src="Icon/icon-1024.png" width="128" alt="NotchUnlock">
 </p>
 
-<h1 align="center">Face Unlock</h1>
+<h1 align="center">NotchUnlock</h1>
 
 <p align="center">
   Unlock your Mac with your face, like Face ID on iPhone.<br>
@@ -11,8 +11,8 @@
 
 <table align="center">
   <tr>
-    <td align="center"><img src="docs/unlock.gif" width="420" alt="Face Unlock recognizing the user and unlocking the Mac"></td>
-    <td align="center"><img src="docs/failure.gif" width="420" alt="Face Unlock rejecting an unknown face"></td>
+    <td align="center"><img src="docs/unlock.gif" width="420" alt="NotchUnlock recognizing the user and unlocking the Mac"></td>
+    <td align="center"><img src="docs/failure.gif" width="420" alt="NotchUnlock rejecting an unknown face"></td>
   </tr>
   <tr>
     <td align="center"><sub>Recognized: the rings settle, the face appears, and the Mac unlocks</sub></td>
@@ -32,7 +32,7 @@
 ### Automatic unlock
 - **Open the lid and you're in**: if the display wakes while the Mac is locked, scanning starts on its own.
 - **Deliberate lock** (Ctrl+Cmd+Q, Apple menu): the camera stays off until you hover over or click the notch.
-- Once your face is recognized, Face Unlock types your login password for you.
+- Once your face is recognized, NotchUnlock types your login password for you.
 
 ### On-device recognition
 - Face detection with Vision, 5-point alignment (eyes, nose, mouth corners) and an **SFace** face recognition model running in Core ML.
@@ -71,30 +71,30 @@
 
 ## Download
 
-1. Download the `FaceUnlock-x.y.zip` file from the [latest release](https://github.com/Bargi20/FaceUnlock/releases/latest). It runs on both Apple silicon and Intel Macs.
-2. Unzip it and drag **Face Unlock** into your **Applications** folder.
+1. Download the `NotchUnlock-x.y.zip` file from the [latest release](https://github.com/Bargi20/NotchUnlock/releases/latest). It runs on both Apple silicon and Intel Macs.
+2. Unzip it and drag **NotchUnlock** into your **Applications** folder.
 3. Open it. The app is not notarized by Apple, so the first time macOS blocks it with a warning. Go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**, then confirm.
 
 ## Build from source
 
 ```bash
-git clone https://github.com/Bargi20/FaceUnlock.git
-cd FaceUnlock
+git clone https://github.com/Bargi20/NotchUnlock.git
+cd NotchUnlock
 ./build-app.sh
 ```
 
-The script builds a release version of the app and installs it in `/Applications/Face Unlock.app`. Use `./build-app.sh --dist` to build a universal zip in `dist/` instead, and `Tools/make-demo.sh` to regenerate the demo GIFs above from the app's real animation (needs `ffmpeg`).
+The script builds a release version of the app and installs it in `/Applications/NotchUnlock.app`. Use `./build-app.sh --dist` to build a universal zip in `dist/` instead, and `Tools/make-demo.sh` to regenerate the demo GIFs above from the app's real animation (needs `ffmpeg`).
 
 ## First launch
 
 1. **Camera**: allow access when macOS asks.
 2. **Accessibility**: turn it on in System Settings → Privacy & Security → Accessibility. It is needed to type your password.
 3. **Password**: enter your Mac login password in the app's Settings. It is saved in your Keychain.
-4. **Face**: click "Set Up Face Unlock…" and follow the instructions.
+4. **Face**: click "Set Up NotchUnlock…" and follow the instructions.
 
 ## Limitations
 
-> **Convenience, not security.** Face Unlock uses the regular 2D camera, not a depth sensor like Face ID. Photo protection lowers the risk, but it is not comparable to the security of Face ID or Touch ID.
+> **Convenience, not security.** NotchUnlock uses the regular 2D camera, not a depth sensor like Face ID. Photo protection lowers the risk, but it is not comparable to the security of Face ID or Touch ID.
 
 - It only works once you are logged in: after a restart, or at the first login with FileVault, you need your password.
 - The app is signed locally (ad hoc) and not notarized, so macOS warns you the first time you open it, and may ask for permissions again after each update.
@@ -107,4 +107,4 @@ The script builds a release version of the app and installs it in `/Applications
 
 ## License
 
-Face Unlock is free software released under the **GNU GPL v3.0**, the same license as FaceMac, which it is derived from: you can use, modify and redistribute it, as long as modified versions stay GPL-3.0 too. Full text in [`LICENSE`](LICENSE), third-party components in [`NOTICE`](NOTICE).
+NotchUnlock is free software released under the **GNU GPL v3.0**, the same license as FaceMac, which it is derived from: you can use, modify and redistribute it, as long as modified versions stay GPL-3.0 too. Full text in [`LICENSE`](LICENSE), third-party components in [`NOTICE`](NOTICE).

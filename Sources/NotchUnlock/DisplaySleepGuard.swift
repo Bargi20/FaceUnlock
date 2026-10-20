@@ -15,7 +15,7 @@ public final class DisplaySleepGuard {
 
     public var isHolding: Bool { holding }
 
-    public func hold(reason: String = "Face Unlock is recognizing you") {
+    public func hold(reason: String = "NotchUnlock is recognizing you") {
         guard !holding else { return }
         var id: IOPMAssertionID = 0
         let result = IOPMAssertionCreateWithName(

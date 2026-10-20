@@ -1,4 +1,4 @@
-// Renders the Face Unlock app icon (1024px) with SwiftUI.
+// Renders the NotchUnlock app icon (1024px) with SwiftUI.
 import AppKit
 import SwiftUI
 

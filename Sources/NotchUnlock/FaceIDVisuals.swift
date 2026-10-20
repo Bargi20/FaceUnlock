@@ -1,6 +1,6 @@
 //
 //  FaceIDVisuals.swift
-//  FaceUnlock
+//  NotchUnlock
 //
 //  Apple-style Face ID visuals: the animated Face ID glyph used in the notch,
 //  and the circular enrollment ring with the live camera preview.
@@ -213,9 +213,9 @@ struct FaceEnrollmentRing: View {
     }
 }
 
-/// The whole Apple-like flow, shown as a sheet from the Face Unlock settings.
+/// The whole Apple-like flow, shown as a sheet from the NotchUnlock settings.
 struct FaceEnrollmentFlow: View {
-    @ObservedObject var manager = FaceUnlockManager.shared
+    @ObservedObject var manager = NotchUnlockManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var started = false
 
@@ -225,7 +225,7 @@ struct FaceEnrollmentFlow: View {
             case .intro:
                 Spacer(minLength: 0)
                 FaceIDGlyph(state: .scanning, size: 84, color: .primary)
-                Text("Set Up Face Unlock")
+                Text("Set Up NotchUnlock")
                     .font(.system(size: 22, weight: .bold))
                 Text("Position your face in front of the camera and slowly move your head to complete the circle.")
                     .font(.system(size: 13))
@@ -277,7 +277,7 @@ struct FaceEnrollmentFlow: View {
                     stepCount: GuidedEnroller.stepCount,
                     done: true
                 )
-                Text("Face Unlock Is Set Up")
+                Text("NotchUnlock Is Set Up")
                     .font(.system(size: 20, weight: .bold))
                 Text("You can now unlock your Mac by looking at the screen.")
                     .font(.system(size: 12))
@@ -508,7 +508,7 @@ struct FaceIDShake: GeometryEffect {
 
 /// The square that drops out of the notch when Face ID is needed (lock screen).
 struct FaceIDSquare: View {
-    @ObservedObject var manager = FaceUnlockManager.shared
+    @ObservedObject var manager = NotchUnlockManager.shared
     /// Height of the hardware notch, so the content sits below it.
     let notchHeight: CGFloat
 

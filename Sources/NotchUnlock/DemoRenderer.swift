@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Renders the README demo: the real Face ID panel and rings, frame by frame,
 /// over a mock desktop. Run with
-/// `FaceUnlock --render-demo <unlock|failure> <output folder>`;
+/// `NotchUnlock --render-demo <unlock|failure> <output folder>`;
 /// Tools/make-demo.sh turns the PNG frames into GIFs.
 @MainActor
 enum DemoRenderer {

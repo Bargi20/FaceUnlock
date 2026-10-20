@@ -4,7 +4,7 @@
 "Face enrolled" = "Volto registrato";
 "No face enrolled" = "Nessun volto registrato";
 "Enroll again" = "Registra di nuovo";
-"Set Up Face Unlock…" = "Configura Face Unlock…";
+"Set Up NotchUnlock…" = "Configura NotchUnlock…";
 "Camera allowed" = "Fotocamera concessa";
 "Camera needed to recognize your face" = "Fotocamera necessaria per riconoscere il volto";
 "Grant All Permissions" = "Concedi tutti i permessi";
@@ -19,12 +19,12 @@
 "Perfect, hold still…" = "Perfetto, resta così…";
 "Look straight at the screen" = "Guarda dritto verso lo schermo";
 "Can't read your face, try again with more light" = "Non riesco a leggere il volto, riprova con più luce";
-"Set Up Face Unlock" = "Configura Face Unlock";
+"Set Up NotchUnlock" = "Configura NotchUnlock";
 "Position your face in front of the camera and slowly move your head to complete the circle." = "Posiziona il viso davanti alla fotocamera e muovi lentamente la testa per completare il cerchio.";
 "Get Started" = "Inizia";
 "Cancel" = "Annulla";
 "Slowly move your head to complete the circle." = "Muovi lentamente la testa per completare il cerchio.";
-"Face Unlock Is Set Up" = "Face Unlock è configurato";
+"NotchUnlock Is Set Up" = "NotchUnlock è configurato";
 "You can now unlock your Mac by looking at the screen." = "Ora puoi sbloccare il Mac guardando lo schermo.";
 "Done" = "Fine";
 "Enrollment Failed" = "Registrazione non riuscita";
@@ -46,11 +46,11 @@
 "Tilt your head left" = "Inclina a sinistra";
 "Tilt your head right" = "Inclina a destra";
 "Settings…" = "Impostazioni…";
-"Quit Face Unlock" = "Esci da Face Unlock";
+"Quit NotchUnlock" = "Esci da NotchUnlock";
 "Password saved in your Keychain" = "Password salvata nel Portachiavi";
 "Change…" = "Cambia…";
 "Mac login password" = "Password di login del Mac";
 "Type your password here" = "Scrivi qui la tua password";
 "Save" = "Salva";
 "Login Password" = "Password di login";
-"The same password you use to log in to this Mac. Face Unlock types it for you when it recognizes your face. It is stored only in your Keychain." = "La stessa password che usi per accedere a questo Mac. Face Unlock la digita per te quando riconosce il tuo volto. Viene salvata solo nel tuo Portachiavi.";
+"The same password you use to log in to this Mac. NotchUnlock types it for you when it recognizes your face. It is stored only in your Keychain." = "La stessa password che usi per accedere a questo Mac. NotchUnlock la digita per te quando riconosce il tuo volto. Viene salvata solo nel tuo Portachiavi.";

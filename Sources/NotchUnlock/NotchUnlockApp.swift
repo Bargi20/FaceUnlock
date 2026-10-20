@@ -1,6 +1,6 @@
 //
-//  FaceUnlockApp.swift
-//  FaceUnlock
+//  NotchUnlockApp.swift
+//  NotchUnlock
 //
 //  Menu bar app: settings window with the Apple-style enrollment, and a
 //  transparent window over the notch from which the Face ID square drops
@@ -13,15 +13,15 @@ import SkyLightWindow
 import SwiftUI
 
 @main
-struct FaceUnlockApp: App {
+struct NotchUnlockApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Face Unlock", systemImage: "faceid") {
+        MenuBarExtra("NotchUnlock", systemImage: "faceid") {
             Button("Settings…") { appDelegate.showSettings() }
                 .keyboardShortcut(",")
             Divider()
-            Button("Quit Face Unlock") { NSApp.terminate(nil) }
+            Button("Quit NotchUnlock") { NSApp.terminate(nil) }
                 .keyboardShortcut("q")
         }
     }
@@ -38,15 +38,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return
         }
         NSApp.setActivationPolicy(.accessory)
-        FaceUnlockManager.shared.start()
+        NotchUnlockManager.shared.start()
         notchWindow = NotchSquareWindow()
         // Ask for every permission up front instead of when each is first needed.
-        if !FaceUnlockManager.shared.allPermissionsGranted {
-            FaceUnlockManager.shared.requestAllPermissions()
+        if !NotchUnlockManager.shared.allPermissionsGranted {
+            NotchUnlockManager.shared.requestAllPermissions()
         }
 
         // First run: nothing enrolled yet, open the settings with the setup flow.
-        if !FaceUnlockManager.shared.hasEnrollment {
+        if !NotchUnlockManager.shared.hasEnrollment {
             showSettings()
         }
     }
@@ -65,9 +65,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 backing: .buffered,
                 defer: false
             )
-            window.title = "Face Unlock"
+            window.title = "NotchUnlock"
             window.isReleasedWhenClosed = false
-            window.contentView = NSHostingView(rootView: FaceUnlockSettings().frame(minWidth: 480, minHeight: 520))
+            window.contentView = NSHostingView(rootView: NotchUnlockSettings().frame(minWidth: 480, minHeight: 520))
             window.center()
             window.delegate = self
             settingsWindow = window
@@ -120,7 +120,7 @@ final class NotchSquareWindow {
         panel.orderFrontRegardless()
 
         // Only catch the mouse while the square is visible.
-        FaceUnlockManager.shared.$phase
+        NotchUnlockManager.shared.$phase
             .receive(on: RunLoop.main)
             .sink { [weak self] phase in self?.panel.ignoresMouseEvents = phase == .hidden }
             .store(in: &cancellables)
@@ -159,7 +159,7 @@ final class NotchSquareWindow {
 }
 
 private struct NotchSquareRoot: View {
-    @ObservedObject var manager = FaceUnlockManager.shared
+    @ObservedObject var manager = NotchUnlockManager.shared
     let notchHeight: CGFloat
 
     var body: some View {
