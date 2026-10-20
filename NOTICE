@@ -1,0 +1,29 @@
+Face Unlock
+Copyright (c) 2026 Bargilli Andrea
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. See LICENSE for the full text.
+
+This project includes or is derived from third-party work:
+
+FaceMac
+  Source:   https://github.com/c1osed1/FaceMac
+  License:  GNU General Public License v3.0
+  Use:      The face recognition engine (camera capture, detection, alignment,
+            matching, liveness, enrollment and unlock flow) is derived from
+            FaceMac and has been modified for this project.
+
+SFace face recognition model
+  Files:    Resources/FaceEmbedding.mlmodelc/
+  Source:   OpenCV Zoo, face_recognition_sface
+            https://github.com/opencv/opencv_zoo/tree/main/models/face_recognition_sface
+  Paper:    SFace: Sigmoid-Constrained Hypersphere Loss for Robust Face Recognition
+  License:  Apache License 2.0 (see LICENSES/Apache-2.0.txt)
+  Changes:  The original ONNX model was converted to Core ML format
+            (FaceEmbedding.mlmodelc). The weights were not retrained.
+
+SkyLightWindow (Swift package dependency, downloaded at build time)
+  Source:   https://github.com/Lakr233/SkyLightWindow
+  License:  MIT License, Copyright (c) 2025 Lakr Aream

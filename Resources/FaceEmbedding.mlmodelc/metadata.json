@@ -1,0 +1,73 @@
+[
+  {
+    "metadataOutputVersion" : "3.0",
+    "shortDescription" : "SFace face embedding (OpenCV Zoo, Apache-2.0)",
+    "outputSchema" : [
+      {
+        "hasShapeFlexibility" : "0",
+        "isOptional" : "0",
+        "dataType" : "Float16",
+        "formattedType" : "MultiArray (Float16 1 × 128)",
+        "shortDescription" : "128-d face embedding",
+        "shape" : "[1, 128]",
+        "name" : "embedding",
+        "type" : "MultiArray"
+      }
+    ],
+    "storagePrecision" : "Mixed (Float16, Float32)",
+    "modelParameters" : [
+
+    ],
+    "specificationVersion" : 8,
+    "mlProgramOperationTypeHistogram" : {
+      "Ios17.prelu" : 27,
+      "Ios17.squeeze" : 1,
+      "Ios17.reshape" : 1,
+      "Ios17.cast" : 1,
+      "Ios17.conv" : 27,
+      "Ios17.mul" : 1,
+      "Ios17.linear" : 1,
+      "Ios17.sub" : 1,
+      "Ios17.batchNorm" : 2,
+      "Ios17.expandDims" : 1
+    },
+    "computePrecision" : "Mixed (Float16, Float32, Int32)",
+    "isUpdatable" : "0",
+    "stateSchema" : [
+
+    ],
+    "availability" : {
+      "macOS" : "14.0",
+      "tvOS" : "17.0",
+      "visionOS" : "1.0",
+      "watchOS" : "10.0",
+      "iOS" : "17.0",
+      "macCatalyst" : "17.0"
+    },
+    "modelType" : {
+      "name" : "MLModelType_mlProgram"
+    },
+    "inputSchema" : [
+      {
+        "height" : "112",
+        "colorspace" : "RGB",
+        "isOptional" : "0",
+        "width" : "112",
+        "isColor" : "1",
+        "formattedType" : "Image (Color 112 × 112)",
+        "hasSizeFlexibility" : "0",
+        "type" : "Image",
+        "shortDescription" : "112x112 RGB face crop",
+        "name" : "data"
+      }
+    ],
+    "userDefinedMetadata" : {
+      "com.github.apple.coremltools.conversion_date" : "2026-10-01",
+      "com.github.apple.coremltools.source" : "torch==2.14.1",
+      "com.github.apple.coremltools.version" : "9.0",
+      "com.github.apple.coremltools.source_dialect" : "TorchScript"
+    },
+    "generatedClassName" : "FaceEmbedding",
+    "method" : "predict"
+  }
+]
