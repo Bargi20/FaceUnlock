@@ -9,6 +9,17 @@
   A panel drops from the notch, the rings spin, and you're in.
 </p>
 
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/unlock.gif" width="420" alt="Face Unlock recognizing the user and unlocking the Mac"></td>
+    <td align="center"><img src="docs/failure.gif" width="420" alt="Face Unlock rejecting an unknown face"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Recognized: the rings settle, the face appears, and the Mac unlocks</sub></td>
+    <td align="center"><sub>Not recognized: the rings turn red and the panel shakes</sub></td>
+  </tr>
+</table>
+
 ---
 
 ## Features
@@ -72,7 +83,7 @@ cd FaceUnlock
 ./build-app.sh
 ```
 
-The script builds a release version of the app and installs it in `/Applications/Face Unlock.app`. Use `./build-app.sh --dist` to build a universal zip in `dist/` instead.
+The script builds a release version of the app and installs it in `/Applications/Face Unlock.app`. Use `./build-app.sh --dist` to build a universal zip in `dist/` instead, and `Tools/make-demo.sh` to regenerate the demo GIFs above from the app's real animation (needs `ffmpeg`).
 
 ## First launch
 

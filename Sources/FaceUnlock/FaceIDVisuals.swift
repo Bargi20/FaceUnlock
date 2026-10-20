@@ -99,7 +99,7 @@ private struct FaceIDCorners: Shape {
 }
 
 /// Eyes, nose and smile.
-private struct FaceIDFace: Shape {
+struct FaceIDFace: Shape {
     func path(in r: CGRect) -> Path {
         let w = r.width
         var p = Path()
@@ -348,43 +348,23 @@ struct FaceIDScanner: View {
     @SwiftUI.State private var start = Date()
     @SwiftUI.State private var settledAt: Date?
 
-    private static let green = Color(red: 0.44, green: 0.85, blue: 0.48)
-    private static let red = Color(red: 1.0, green: 0.3, blue: 0.27)
+    static let green = Color(red: 0.44, green: 0.85, blue: 0.48)
+    static let red = Color(red: 1.0, green: 0.3, blue: 0.27)
 
-    /// Spin speed while scanning (deg/s), azimuth drift (deg/s), shortest brake (s).
+    /// Spin speed while scanning (deg/s), azimuth drift (deg/s), brake length (s).
     private static let spinSpeed = 720.0
     private static let azSpeed = 120.0
-    private static let minBrake = 0.4
+    static let brakeTime = 0.45
 
     var body: some View {
-        let tint = state == .failure ? Self.red : Self.green
         // No minimumInterval: run at the display's native rate (120 Hz on ProMotion).
         TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSince(start)
-            let ts = settledAt.map { max(0, $0.timeIntervalSince(start)) }
-            let r1 = Self.pose(t: t, settleAt: ts, phase: 0, dir: 1)
-            let r2 = Self.pose(t: t, settleAt: ts, phase: 90, dir: -1)
-            let appear = Self.easeOut(min(1, t / 0.3))
-            let braking = min(r1.braking, r2.braking)
-            let faceStart = ts.map { $0 + max(r1.brakeTime, r2.brakeTime) - 0.08 }
-            let faceIn = state == .success && faceStart != nil && t > faceStart!
-                ? Self.easeOut(min(1, (t - faceStart!) / 0.26)) : 0
-
-            ZStack {
-                ZStack {
-                    ring(r1, tint: tint)
-                    ring(r2, tint: tint)
-                }
-                // Motion blur that clears as the rings slow down.
-                .blur(radius: size * 0.019 * CGFloat(1 - braking))
-                FaceIDFace()
-                    .stroke(tint, style: StrokeStyle(lineWidth: size * 0.05, lineCap: .round, lineJoin: .round))
-                    .frame(width: size * 0.86, height: size * 0.86)
-                    .scaleEffect(CGFloat(0.92 + 0.08 * faceIn))
-                    .opacity(faceIn)
-            }
-            .frame(width: size, height: size)
-            .opacity(appear)
+            FaceIDScannerFrame(
+                t: timeline.date.timeIntervalSince(start),
+                settleAt: settledAt.map { max(0, $0.timeIntervalSince(start)) },
+                state: state,
+                size: size
+            )
         }
         .modifier(FaceIDShake(animatableData: shakes))
         .onAppear {
@@ -397,15 +377,6 @@ struct FaceIDScanner: View {
         }
     }
 
-    private func ring(_ pose: RingPose, tint: Color) -> some View {
-        Circle()
-            .inset(by: size * 0.025)
-            .stroke(tint, lineWidth: size * 0.05)
-            .frame(width: size, height: size)
-            // CSS reference: perspective 380px on an 84px ring.
-            .modifier(RingTumble(pose: pose, perspective: size * 380 / 84))
-    }
-
     struct RingPose {
         var az: Double, spin: Double, wobble: Double
         /// 0 while scanning, 1 once flat.
@@ -414,32 +385,82 @@ struct FaceIDScanner: View {
     }
 
     /// Ring orientation at time `t`. While scanning it spins at constant speed;
-    /// from `settleAt` it brakes with an ease-out whose starting speed equals the
-    /// spin speed, landing on the next flat orientation (a multiple of 180°).
+    /// from `settleAt` it brakes for exactly `brakeTime`, starting at the spin
+    /// speed (no jump) and landing flat on the next multiple of 180° that is
+    /// 180–360° ahead. A fixed brake keeps the success face visible before the
+    /// panel closes.
     static func pose(t: Double, settleAt: Double?, phase: Double, dir: Double) -> RingPose {
         func wob(_ t: Double) -> Double { sin(t * 2 * .pi * 0.64 + phase / 60) * 25 }
         guard let ts = settleAt, t > ts else {
             return RingPose(az: phase * 0.6 + dir * azSpeed * t,
                             spin: phase + dir * spinSpeed * t,
-                            wobble: wob(t), braking: 0, brakeTime: 0)
+                            wobble: wob(t), braking: 0, brakeTime: brakeTime)
         }
         let spin0 = phase + dir * spinSpeed * ts
-        let minTravel = spinSpeed * minBrake / 3 // easeOut'(0) = 3
         let target = dir > 0
-            ? (ceil((spin0 + minTravel) / 180) * 180)
-            : (floor((spin0 - minTravel) / 180) * 180)
+            ? (floor((spin0 + 180) / 180) * 180 + 180)
+            : (ceil((spin0 - 180) / 180) * 180 - 180)
         let travel = abs(target - spin0)
-        let duration = 3 * travel / spinSpeed
-        let p = min(1, (t - ts) / duration)
-        let e = easeOut(p)
-        return RingPose(az: phase * 0.6 + dir * azSpeed * ts + dir * azSpeed * duration / 3 * e,
-                        spin: spin0 + (target - spin0) * e,
-                        wobble: wob(t) * (1 - easeInOut(p)),
-                        braking: e, brakeTime: duration)
+        let s = min(1, (t - ts) / brakeTime)
+        // Cubic with x(0)=0, x'(0)=c (the spin speed), x(1)=1, x'(1)=0; monotonic
+        // for c in (0, 3], and c = 720*0.45/travel stays within 0.9...1.8.
+        let c = spinSpeed * brakeTime / travel
+        let x = (c - 2) * s * s * s + (3 - 2 * c) * s * s + c * s
+        return RingPose(az: phase * 0.6 + dir * azSpeed * (ts + brakeTime * (s - s * s / 2)),
+                        spin: spin0 + (target - spin0) * x,
+                        wobble: wob(t) * (1 - easeInOut(s)),
+                        braking: x, brakeTime: brakeTime)
     }
 
-    private static func easeOut(_ p: Double) -> Double { 1 - pow(1 - p, 3) }
-    private static func easeInOut(_ p: Double) -> Double { p * p * (3 - 2 * p) }
+    static func easeOut(_ p: Double) -> Double { 1 - pow(1 - p, 3) }
+    static func easeInOut(_ p: Double) -> Double { p * p * (3 - 2 * p) }
+}
+
+/// One frame of the Face ID rings at time `t` (seconds since they appeared),
+/// settling from `settleAt` when the scan ends. Pure function of time, so it can
+/// be driven by a TimelineView or rendered frame by frame for the README demo.
+struct FaceIDScannerFrame: View {
+    let t: Double
+    let settleAt: Double?
+    let state: FaceIDScanner.State
+    var size: CGFloat = 96
+
+    var body: some View {
+        let tint = state == .failure ? FaceIDScanner.red : FaceIDScanner.green
+        let r1 = FaceIDScanner.pose(t: t, settleAt: settleAt, phase: 0, dir: 1)
+        let r2 = FaceIDScanner.pose(t: t, settleAt: settleAt, phase: 90, dir: -1)
+        let appear = FaceIDScanner.easeOut(min(1, t / 0.3))
+        let braking = min(r1.braking, r2.braking)
+        let faceStart = settleAt.map { $0 + FaceIDScanner.brakeTime - 0.08 }
+        let faceIn = state == .success && faceStart != nil && t > faceStart!
+            ? FaceIDScanner.easeOut(min(1, (t - faceStart!) / 0.26)) : 0
+
+        ZStack {
+            ZStack {
+                ring(r1, tint: tint)
+                ring(r2, tint: tint)
+            }
+            // Motion blur that clears as the rings slow down.
+            .blur(radius: size * 0.019 * CGFloat(1 - braking))
+            FaceIDFace()
+                .stroke(tint, style: StrokeStyle(lineWidth: size * 0.05, lineCap: .round, lineJoin: .round))
+                .frame(width: size * 0.86, height: size * 0.86)
+                .scaleEffect(CGFloat(0.92 + 0.08 * faceIn))
+                .opacity(faceIn)
+        }
+        .frame(width: size, height: size)
+        .opacity(appear)
+    }
+
+    private func ring(_ pose: FaceIDScanner.RingPose, tint: Color) -> some View {
+        Circle()
+            .inset(by: size * 0.025)
+            .stroke(tint, lineWidth: size * 0.05)
+            .frame(width: size, height: size)
+            // CSS reference: perspective 380px on an 84px ring.
+            .modifier(RingTumble(pose: pose, perspective: size * 380 / 84))
+    }
+
 }
 
 /// One 3D transform per ring, like the CSS
@@ -478,7 +499,7 @@ private struct CheckmarkShape: Shape {
     }
 }
 
-private struct FaceIDShake: GeometryEffect {
+struct FaceIDShake: GeometryEffect {
     var animatableData: CGFloat
     func effectValue(size: CGSize) -> ProjectionTransform {
         ProjectionTransform(CGAffineTransform(translationX: 7 * sin(animatableData * .pi * 6), y: 0))
@@ -502,6 +523,7 @@ struct FaceIDSquare: View {
                 .foregroundStyle(labelColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+                .padding(.horizontal, 16)
                 .contentTransition(.opacity)
                 .animation(.smooth, value: label)
             Spacer(minLength: 12)
