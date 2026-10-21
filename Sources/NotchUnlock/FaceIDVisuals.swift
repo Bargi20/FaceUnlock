@@ -512,14 +512,56 @@ struct FaceIDSquare: View {
     /// Height of the hardware notch, so the content sits below it.
     let notchHeight: CGFloat
 
-    /// Wide and short, like an expanded Dynamic Island.
+    /// Expanded: wide and short, like an expanded Dynamic Island.
     static let width: CGFloat = 340
     /// Height below the notch.
     static let bodyHeight: CGFloat = 128
     static let cornerRadius: CGFloat = 38
     static let scannerSize: CGFloat = 84
+    /// Compact preview: as wide as the panel, with a lip below the notch.
+    static let compactLip: CGFloat = 8
+    static let compactRadius: CGFloat = 14
+
+    private var isCompact: Bool { manager.phase == .prompted }
+    @State private var hovering = false
+
+    /// How much the preview's lip grows under the pointer, to show it can be clicked.
+    static let hoverBump: CGFloat = 6
+
+    /// Height below the notch: the lip (a bit longer under the pointer) or the full body.
+    private var bodyHeight: CGFloat {
+        isCompact ? Self.compactLip + (hovering ? Self.hoverBump : 0) : Self.bodyHeight
+    }
 
     var body: some View {
+        let radius = isCompact ? Self.compactRadius : Self.cornerRadius
+        let shape = UnevenRoundedRectangle(bottomLeadingRadius: radius, bottomTrailingRadius: radius, style: .continuous)
+        // Same width in both states: clicking only makes the panel drop down.
+        ZStack(alignment: .top) {
+            if isCompact {
+                FaceIDPreview(notchHeight: notchHeight)
+                    .transition(.opacity)
+            } else {
+                expanded
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .frame(width: Self.width, height: notchHeight + bodyHeight, alignment: .top)
+        .background(shape.fill(.black))
+        .clipShape(shape)
+        // Springy bump on hover; a smooth drop when it opens.
+        .animation(isCompact ? .spring(response: 0.28, dampingFraction: 0.45)
+                             : .spring(response: 0.45, dampingFraction: 0.82),
+                   value: bodyHeight)
+        .contentShape(Rectangle())
+        .onHover { inside in
+            hovering = inside
+            (inside && isCompact ? NSCursor.pointingHand : NSCursor.arrow).set()
+        }
+        .onTapGesture { _ = manager.retryIfPossible() }
+    }
+
+    private var expanded: some View {
         VStack(spacing: 8) {
             Spacer(minLength: notchHeight)
             content
@@ -535,20 +577,11 @@ struct FaceIDSquare: View {
             Spacer(minLength: 12)
         }
         .frame(width: Self.width, height: notchHeight + Self.bodyHeight)
-        .background(
-            UnevenRoundedRectangle(bottomLeadingRadius: Self.cornerRadius, bottomTrailingRadius: Self.cornerRadius, style: .continuous)
-                .fill(.black)
-        )
-        .contentShape(Rectangle())
-        .onHover { if $0 { _ = manager.retryIfPossible() } }
-        .onTapGesture { _ = manager.retryIfPossible() }
     }
 
     @ViewBuilder private var content: some View {
         switch manager.phase {
-        case .prompted:
-            FaceIDGlyph(state: .idle, size: 60)
-        case .scanning, .matched, .failed:
+        case .scanning, .matched, .failed, .prompted:
             // One view for all three, so the rings settle smoothly instead of restarting.
             FaceIDScanner(state: scannerState, size: Self.scannerSize)
         case .hidden:
@@ -566,7 +599,7 @@ struct FaceIDSquare: View {
 
     private var label: String {
         switch manager.phase {
-        case .prompted: return tr("Hover here to unlock")
+        case .prompted: return ""
         case .scanning: return "Face ID"
         case .matched: return tr("Unlocked")
         case .failed(let reason): return reason.isEmpty ? tr("Try Again") : String(format: tr("%@ · Try again"), reason)
@@ -577,5 +610,20 @@ struct FaceIDSquare: View {
     private var labelColor: Color {
         if case .failed = manager.phase { return Color(red: 1.0, green: 0.4, blue: 0.35) }
         return .white.opacity(0.85)
+    }
+}
+
+/// The compact preview shown while locked: a small breathing Face ID glyph in
+/// the left wing. Clicking it opens the panel and starts the scan.
+struct FaceIDPreview: View {
+    let notchHeight: CGFloat
+
+    var body: some View {
+        HStack {
+            FaceIDGlyph(state: .scanning, size: 16)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .frame(height: notchHeight)
     }
 }

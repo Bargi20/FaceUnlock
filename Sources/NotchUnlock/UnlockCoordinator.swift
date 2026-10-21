@@ -53,9 +53,6 @@ public final class UnlockCoordinator {
     private var frameCounter = 0
     private var lastAttemptAt = Date.distantPast
     private var isScanning = false
-    /// When the display last woke; used to tell a lid-open wake apart from a
-    /// deliberate lock so we know whether to scan straight away.
-    private var lastWakeAt = Date.distantPast
 
     /// Consecutive matching frames seen so far, and when the streak began.
     private var matchStreak = 0
@@ -159,8 +156,8 @@ public final class UnlockCoordinator {
         }
     }
 
-    /// Sets up a locked-but-idle state: the camera stays off until the user taps
-    /// the scan button. Used for a deliberate lock (Ctrl+Cmd+Q, Apple menu).
+    /// Sets up a locked-but-idle state: the camera stays off until the user
+    /// clicks the preview at the notch.
     private func promptForScan() {
         guard settings.isEnabled else {
             state = .disabled
@@ -361,19 +358,14 @@ extension UnlockCoordinator: CameraCaptureDelegate {
 }
 
 extension UnlockCoordinator: LockWatcherDelegate {
+    // The camera never starts on its own: locking (or waking locked) only shows
+    // the compact preview at the notch, and clicking it starts the scan.
     public func lockWatcherDidLock(_ watcher: LockWatcher) {
-        // If the display just woke (lid opened) the lock is part of waking up,
-        // so scan immediately. A deliberate lock just offers the button.
-        if Date().timeIntervalSince(lastWakeAt) < 3 {
-            startScanning()
-        } else {
-            promptForScan()
-        }
+        promptForScan()
     }
 
     public func lockWatcherDidWakeLocked(_ watcher: LockWatcher) {
-        lastWakeAt = Date()
-        startScanning()
+        if !isScanning { promptForScan() }
     }
 
     public func lockWatcherDidUnlock(_ watcher: LockWatcher) {

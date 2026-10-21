@@ -220,18 +220,25 @@ final class NotchUnlockManager: ObservableObject {
         case .prompted: phase = .prompted
         case .scanning: phase = .scanning
         case .unlocking(let similarity): phase = .matched(similarity: similarity)
-        case .failed(let reason): phase = .failed(reason)
-        case .timedOut: phase = .failed(tr("Not recognized"))
-        case .rejected: phase = .failed(tr("Face not recognized"))
-        case .spoof: phase = .failed(tr("A real face is needed"))
+        case .failed(let reason): showFailure(reason)
+        case .timedOut: showFailure(tr("Not recognized"))
+        case .rejected: showFailure(tr("Face not recognized"))
+        case .spoof: showFailure(tr("A real face is needed"))
         }
     }
 
-    private func schedule(after seconds: Double) {
+    /// Shows the red rings, then folds back into the compact preview so the
+    /// next click can try again.
+    private func showFailure(_ reason: String) {
+        phase = .failed(reason)
+        schedule(after: 2.5, then: .prompted)
+    }
+
+    private func schedule(after seconds: Double, then next: Phase = .hidden) {
         hideTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(seconds))
             guard !Task.isCancelled else { return }
-            self?.phase = .hidden
+            self?.phase = next
         }
     }
 }

@@ -34,14 +34,18 @@ enum DemoRenderer {
 }
 
 /// When each step happens, in seconds from the start of the clip. Matches the
-/// app: spring open, scan, fixed brake, then the panel closes 0.45 s after the
-/// password is typed (or stays, red, on failure).
+/// app: the compact preview appears at the notch, the pointer clicks it, the
+/// panel opens and scans, the rings brake, then the panel closes 0.45 s after
+/// the password is typed (or, on failure, folds back into the preview).
 struct DemoTimeline {
     let scenario: DemoRenderer.Scenario
-    let open = 0.5
+    let preview = 0.3
+    let pointerStart = 0.8
+    let open = 1.6
     var settle: Double { open + 1.2 }
     var close: Double? { scenario == .unlock ? settle + 0.2 + 0.45 : nil }
-    var duration: Double { scenario == .unlock ? close! + 0.9 : settle + 1.8 }
+    var collapse: Double? { scenario == .failure ? settle + 2.5 : nil }
+    var duration: Double { scenario == .unlock ? close! + 0.9 : collapse! + 0.9 }
 }
 
 private struct DemoScene: View {
@@ -89,6 +93,7 @@ private struct DemoScene: View {
             UnevenRoundedRectangle(bottomLeadingRadius: 10, bottomTrailingRadius: 10, style: .continuous)
                 .fill(.black)
                 .frame(width: notch.width, height: notch.height)
+            pointer
         }
         .frame(width: 560, height: 400)
         .clipped()
@@ -101,45 +106,86 @@ private struct DemoScene: View {
         return smooth(min(1, max(0, (time - close) / 0.35)))
     }
 
-    /// The real panel: black, dropping from the notch with the app's spring
-    /// (response 0.5, damping 0.78), closing in 0.22 s.
+    /// The real panel: the compact preview pops out of the notch, grows into
+    /// the full panel on click (spring 0.45 / 0.8), and closes in 0.22 s.
     @ViewBuilder private var panel: some View {
-        let shown = time >= timeline.open && (timeline.close.map { time < $0 + 0.22 } ?? true)
+        let shown = time >= timeline.preview && (timeline.close.map { time < $0 + 0.22 } ?? true)
         if shown {
-            let progress: Double = {
+            // Appearing from hidden (and closing after unlock).
+            let appear: Double = {
                 if let close = timeline.close, time >= close {
                     return 1 - smooth(min(1, (time - close) / 0.22))
                 }
-                return spring(time - timeline.open)
+                return spring(time - timeline.preview)
             }()
-            let scannerTime = time - timeline.open
-            let settleAt = timeline.settle - timeline.open
-            let state: FaceIDScanner.State = time < timeline.settle
-                ? .scanning : (timeline.scenario == .unlock ? .success : .failure)
+            // 0 = compact preview, 1 = full panel.
+            let expand: Double = {
+                if let collapse = timeline.collapse, time >= collapse {
+                    return 1 - spring(time - collapse, response: 0.28, damping: 0.45)
+                }
+                return spring(time - timeline.open, response: 0.45, damping: 0.82)
+            }()
+            let lip = FaceIDSquare.compactLip + FaceIDSquare.hoverBump * hoverBump
+            let height = notch.height + lip + (FaceIDSquare.bodyHeight - lip) * expand
+            let radius = FaceIDSquare.compactRadius + (FaceIDSquare.cornerRadius - FaceIDSquare.compactRadius) * expand
+            let shape = UnevenRoundedRectangle(bottomLeadingRadius: radius, bottomTrailingRadius: radius, style: .continuous)
 
-            VStack(spacing: 8) {
-                Spacer(minLength: notch.height)
-                FaceIDScannerFrame(t: scannerTime, settleAt: time < timeline.settle ? nil : settleAt,
-                                   state: state, size: FaceIDSquare.scannerSize)
-                    .modifier(FaceIDShake(animatableData: shake))
-                    .frame(height: FaceIDSquare.scannerSize)
-                Text(label(state))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(state == .failure ? Color(red: 1.0, green: 0.4, blue: 0.35) : .white.opacity(0.85))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .padding(.horizontal, 16)
-                Spacer(minLength: 12)
+            ZStack(alignment: .top) {
+                FaceIDPreview(notchHeight: notch.height)
+                    .opacity(1 - min(1, expand * 2))
+                // Slides down from under the notch, like .move(edge: .top).
+                expanded
+                    .offset(y: -(1 - expand) * (notch.height + FaceIDSquare.bodyHeight))
+                    .opacity(min(1, max(0, expand)))
             }
-            .frame(width: FaceIDSquare.width, height: notch.height + FaceIDSquare.bodyHeight)
-            .background(
-                UnevenRoundedRectangle(bottomLeadingRadius: FaceIDSquare.cornerRadius,
-                                       bottomTrailingRadius: FaceIDSquare.cornerRadius, style: .continuous)
-                    .fill(.black)
-            )
-            .scaleEffect(0.25 + 0.75 * progress, anchor: .top)
-            .opacity(min(1, max(0, progress)))
+            .frame(width: FaceIDSquare.width, height: height, alignment: .top)
+            .background(shape.fill(.black))
+            .clipShape(shape)
+            .scaleEffect(0.25 + 0.75 * appear, anchor: .top)
+            .opacity(min(1, max(0, appear)))
         }
+    }
+
+    /// 0...1 (with overshoot): the pointer arrives at `open - 0.2`.
+    private var hoverBump: Double {
+        spring(time - (timeline.open - 0.25), response: 0.28, damping: 0.45)
+    }
+
+    private var expanded: some View {
+        let scanning = time < timeline.settle
+        let state: FaceIDScanner.State = scanning
+            ? .scanning : (timeline.scenario == .unlock ? .success : .failure)
+        return VStack(spacing: 8) {
+            Spacer(minLength: notch.height)
+            FaceIDScannerFrame(t: max(0, time - timeline.open),
+                               settleAt: scanning ? nil : timeline.settle - timeline.open,
+                               state: state, size: FaceIDSquare.scannerSize)
+                .modifier(FaceIDShake(animatableData: shake))
+                .frame(height: FaceIDSquare.scannerSize)
+            Text(label(state))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(state == .failure ? Color(red: 1.0, green: 0.4, blue: 0.35) : .white.opacity(0.85))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .padding(.horizontal, 16)
+            Spacer(minLength: 12)
+        }
+        .frame(width: FaceIDSquare.width, height: notch.height + FaceIDSquare.bodyHeight)
+    }
+
+    /// A mouse pointer gliding from the lower right onto the preview, then
+    /// clicking it (a quick press at `open`).
+    private var pointer: some View {
+        let p = smooth(min(1, max(0, (time - timeline.pointerStart) / (timeline.open - 0.2 - timeline.pointerStart))))
+        let start = CGPoint(x: 470, y: 330), end = CGPoint(x: 300, y: 30)
+        return PointerShape()
+            .fill(.white)
+            .overlay(PointerShape().stroke(.black, lineWidth: 1.2))
+            .frame(width: 14, height: 21)
+            .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+            .scaleEffect(1 - 0.18 * sin(.pi * min(1, max(0, (time - timeline.open + 0.12) / 0.24))), anchor: .topLeading)
+            .position(x: start.x + (end.x - start.x) * p, y: start.y + (end.y - start.y) * p)
+            .opacity(min(1, max(0, (time - timeline.pointerStart + 0.3) / 0.3)))
     }
 
     private var shake: CGFloat {
@@ -164,4 +210,21 @@ private struct DemoScene: View {
     }
 
     private func smooth(_ p: Double) -> Double { p * p * (3 - 2 * p) }
+}
+
+/// Classic arrow pointer.
+private struct PointerShape: Shape {
+    func path(in r: CGRect) -> Path {
+        let w = r.width, h = r.height
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.minY + h * 0.78))
+        p.addLine(to: CGPoint(x: r.minX + w * 0.3, y: r.minY + h * 0.58))
+        p.addLine(to: CGPoint(x: r.minX + w * 0.5, y: r.minY + h))
+        p.addLine(to: CGPoint(x: r.minX + w * 0.68, y: r.minY + h * 0.92))
+        p.addLine(to: CGPoint(x: r.minX + w * 0.48, y: r.minY + h * 0.52))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + h * 0.52))
+        p.closeSubpath()
+        return p
+    }
 }

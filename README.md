@@ -29,10 +29,10 @@
 - On failure the rings turn red and the panel shakes, like a wrong passcode.
 - The panel shows **on top of the lock screen**, and the animation runs at the display's native refresh rate (120 Hz on ProMotion).
 
-### Automatic unlock
-- **Open the lid and you're in**: if the display wakes while the Mac is locked, scanning starts on its own.
-- **Deliberate lock** (Ctrl+Cmd+Q, Apple menu): the camera stays off until you hover over or click the notch.
-- Once your face is recognized, NotchUnlock types your login password for you.
+### Click to unlock
+- **A preview first**: when the Mac is locked, a small Face ID glyph appears beside the notch. The camera stays off.
+- **Click to open**: click the preview and the panel opens and starts scanning.
+- Once your face is recognized, NotchUnlock types your login password for you. If it fails, the panel folds back into the preview, ready for another try.
 
 ### On-device recognition
 - Face detection with Vision, 5-point alignment (eyes, nose, mouth corners) and an **SFace** face recognition model running in Core ML.
